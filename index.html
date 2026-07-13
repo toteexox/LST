@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Content - LST 1~10</title>
+    <style>
+        :root { 
+            --primary: #4285f4; --bg: #f1f3f4; --border: #eee; --white: #fff; --text: #3c4043; 
+            --gray-btn: #f1f3f4; --gray-text: #5f6368;
+            --dull-blue: #7a97c2; --dull-gray: #9ba3af;
+            --pastel-blue: #e3f2fd; --pastel-blue-text: #1976d2; --pastel-blue-border: #bbdefb;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', 'Malgun Gothic', sans-serif; margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+        .main-content { display: flex; flex-direction: column; width: 100%; max-width: 800px; padding: 20px; min-height: 100vh; justify-content: center; }
+        
+        audio { display: none; }
+
+        .scroll-area { width: 100%; }
+        .content-wrap { width: 100%; }
+
+        .section-title { font-size: 24px; color: var(--primary); margin-bottom: 15px; font-weight: bold; text-align: center; }
+        
+        .top-nav-menu { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 20px; width: 100%; background: var(--white); padding: 10px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .nav-tab { border: 1px solid #dadce0; background: var(--white); color: #3c4043; cursor: pointer; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 700; transition: 0.15s; }
+        .nav-tab:hover { background: #f8f9fa; border-color: #bfaeaf; }
+        .nav-tab.active-tab { background: var(--primary) !important; color: var(--white) !important; border-color: var(--primary) !important; }
+
+        .card { position: relative; background: var(--white); padding: 25px; border-radius: 12px; margin-bottom: 12px; display: none; border: 2px solid var(--pastel-blue-border); background-color: var(--pastel-blue); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.2s; cursor: pointer; flex-direction: column; }
+        .card.active-card { display: flex; }
+        
+        .card.active-play, .card.playing { border-left: 6px solid var(--primary) !important; border-color: var(--primary) !important; background-color: #e8f0fe !important; }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; border-bottom: 1px dashed rgba(0,0,0,0.08); padding-bottom: 10px; }
+        .card-title { font-size: 16px; font-weight: 800; color: var(--primary); }
+        
+        .speed-grp { display: flex; gap: 4px; align-items: center; }
+        .speed-btn { border: 1px solid var(--dull-gray); background: var(--white); color: var(--dull-gray); cursor: pointer; border-radius: 4px; padding: 3px 8px; font-size: 11px; font-weight: 600; height: 24px; transition: 0.1s; }
+        .speed-btn.active { background: var(--dull-blue) !important; color: var(--white) !important; border-color: var(--dull-blue) !important; }
+
+        .card-main-row { display: flex; gap: 15px; width: 100%; align-items: flex-start; }
+        .play-btn { width: 32px; height: 32px; cursor: pointer; flex-shrink: 0; background-size: contain; background-repeat: no-repeat; margin-top: 2px; }
+        .playing .play-btn { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234285f4'%3E%3Cpath d='M6 19h4V5H6v14zm8-14v14h4V5h-4z'/%3E%3C/svg%3E"); }
+        .card:not(.playing) .play-btn { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239aa0a6'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E"); }
+
+        .text-content { flex: 1; display: flex; flex-direction: column; }
+        
+        .sentence-eng { font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; display: block; white-space: normal; }
+        .ipa-text { color: #666; font-size: 15px; margin-bottom: 6px; font-family: 'Inter', sans-serif; }
+        .trans-text { color: #777; font-size: 14px; font-weight: 500; }
+
+        .chunk { pointer-events: auto; cursor: pointer; border-radius: 4px; padding: 1px 2px; display: inline; margin: 0; }
+        .chunk:hover { background: #d2e3fc; }
+        .chunk.active { background: #d2e3fc !important; color: #174ea6 !important; font-weight: bold; }
+
+        .sentence-eng b { color: #000; font-weight: 800; background-color: transparent; }
+        .ipa-text b { color: inherit; font-weight: normal; background-color: transparent; }
+
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; width: 100%; padding: 0 5px; }
+        .nav-btn { background-color: var(--white); border: 1px solid #dadce0; color: #3c4043; padding: 8px 18px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .nav-btn:hover:not(:disabled) { background-color: #f8f9fa; border-color: #c3c4c6; }
+        .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .nav-indicator { font-size: 14px; font-weight: 700; color: var(--gray-text); }
+
+        @media (max-width: 768px) { 
+            .main-content { max-width: 100%; padding: 10px; }
+            .sentence-eng { font-size: 19px; }
+            .top-nav-menu { gap: 4px; padding: 6px; }
+            .nav-tab { 
+                flex: 1 1 calc(20% - 4px); 
+                min-width: calc(20% - 4px);
+                padding: 6px 0; 
+                font-size: 11px; 
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h2 class="section-title">LST Speaking Course</h2>
+        <div class="top-nav-menu" id="top-nav-menu"></div>
+        
+        <audio id="player" preload="auto"></audio> 
+        <main class="scroll-area">
+            <div class="content-wrap" id="display-area"></div>
+        </main>
+
+        <div class="nav-bar">
+            <button class="nav-btn" id="prev-btn" onclick="moveCard(-1)">◀ 이전문장</button>
+            <span class="nav-indicator" id="nav-indicator">1 / 10</span>
+            <button class="nav-btn" id="next-btn" onclick="moveCard(1)">다음문장 ▶</button>
+        </div>
+    </div>
+
+    <script>
+        const studyData = {
+            sentences: [
+                {
+                    audio: "audio/LST1.wav", start: 0.000, end: 6.060,
+                    ipa: "[aɪ <b>θɪŋk</b> ɪt wʌz <b>ʤʌst</b> laɪk, \"<b>lɛt</b> mi: <b>teɪk</b> ə <b>baɪoʊ</b>klæs ænd ðɛn əl '<b>ʃoʊ</b> ju: ðə '<b>ɡreɪd</b> ðæt aɪ <b>ɡɛt</b>]",
+                    trans: "내 생각엔 그냥 '생물학 수업 하나 듣고 내가 받는 성적을 보여줄게' 같은 거였어.",
+                    chunks: [
+                        { text: "I <b>think</b> it was", s: 0.000, e: 0.580 },
+                        { text: "<b>just</b> like,", s: 0.580, e: 1.380 },
+                        { text: "\"<b>Let</b> me", s: 1.380, e: 2.450 },
+                        { text: "<b>take</b> a", s: 2.450, e: 2.840 },
+                        { text: "<b>bio</b> class", s: 2.840, e: 4.260 },
+                        { text: "and then I'll", s: 4.260, e: 4.540 },
+                        { text: "<b>show</b> you the", s: 4.540, e: 4.990 },
+                        { text: "<b>grade</b> that I", s: 4.990, e: 5.540 },
+                        { text: "<b>get</b>.", s: 5.540, e: 6.060 }
+                    ]
+                },
+                {
+                    audio: "audio/LST2.wav", start: 0.000, end: 5.040,
+                    ipa: "[<b>bʌt</b> ðɪs ɪz ɡənə bi ə '<b>tʃælənʤ</b> br'kɔz ðə '<b>kæsl</b> ɪz ɑ:n ə '<b>ri:.ə.li</b> '<b>sti:p hɪl</b>]",
+                    trans: "하지만 이건 도전이 될 거야, 왜냐하면 성이 정말 가파른 언덕 위에 있거든.",
+                    chunks: [
+                        { text: "<b>But</b>", s: 0.000, e: 0.460 },
+                        { text: "this is", s: 0.460, e: 0.710 },
+                        { text: "going to be a", s: 0.710, e: 1.030 },
+                        { text: "<b>chall</b>enge", s: 1.030, e: 1.520 },
+                        { text: "because", s: 1.520, e: 2.690 },
+                        { text: "the <b>ca</b>stle is", s: 2.690, e: 3.330 },
+                        { text: "on a", s: 3.330, e: 3.590 },
+                        { text: "<b>really</b>", s: 3.590, e: 4.060 },
+                        { text: "<b>steep hill</b>.", s: 4.060, e: 5.040 }
+                    ]
+                },
+                {
+                    audio: "audio/LST3.wav", start: 0.000, end: 7.600,
+                    ipa: "[æn ɪts ə '<b>ri:.ə.li</b> <b>fʌn</b> <b>weɪ</b> fər mi ən maɪ <b>frɛndz</b> tə <b>ʤʌst</b> <b>sɛnd</b> ə <b>kwɪk</b> '<b>pɪk</b>tʃər tə ɪk'<b>sprɛs</b> ɪɡ'<b>zæk</b>li <b>wʌts</b> '<b>ɡoʊ</b>ɪŋ an ɪn <b>mɑ:m</b> <b>laɪf</b> ðæt <b>deɪ</b>]",
+                    trans: "그리고 나와 내 친구들이 그날 엄마로서의 일상에서 정확히 무슨 일이 일어나고 있는지 표현하기 위해 그냥 빠른 사진 한 장을 보내는 정말 재미있는 방법이야.",
+                    chunks: [
+                        { text: "And it's a", s: 0.000, e: 0.590 },
+                        { text: "<b>really</b> <b>fun way</b>", s: 0.590, e: 1.280 },
+                        { text: "for me and my friends", s: 1.280, e: 2.170 },
+                        { text: "to just", s: 2.170, e: 2.450 },
+                        { text: "<b>send</b> a", s: 2.450, e: 2.670 },
+                        { text: "<b>quick picture</b> to", s: 2.670, e: 3.430 },
+                        { text: "ex<b>press</b>", s: 3.430, e: 3.820 },
+                        { text: "ex<b>act</b>ly", s: 3.820, e: 4.290 },
+                        { text: "<b>what's go</b>ing on", s: 4.290, e: 5.460 },
+                        { text: "in", s: 5.460, e: 5.750 },
+                        { text: "<b>mom life</b>", s: 5.750, e: 6.840 },
+                        { text: "that <b>day</b>.", s: 6.840, e: 7.600 }
+                    ]
+                },
+                {
+                    audio: "audio/LST4.wav", start: 0.000, end: 3.470,
+                    ipa: "[<b>tɛl</b> '<b>frɛ</b>di tə <b>ɡɪv</b> mi '<b>hoʊm</b>ˌwərk. wi '<b>hæv</b>ənt <b>hæd</b> ən ə'<b>saɪn</b>mənt ɪn <b>wi:ks</b>]",
+                    trans: "프레디한테 나한테 숙제 좀 내달라고 말해줘. 우리 몇 주 동안 과제가 없었단 말이야.",
+                    chunks: [
+                        { text: "<b>Tell</b>", s: 0.000, e: 0.430 },
+                        { text: "<b>Fred</b>die to", s: 0.430, e: 0.780 },
+                        { text: "<b>give</b> me", s: 0.780, e: 1.100 },
+                        { text: "<b>home</b>work.", s: 1.100, e: 1.720 },
+                        { text: "We <b>hav</b>en't", s: 1.720, e: 1.980 },
+                        { text: "<b>had</b> an", s: 1.980, e: 2.210 },
+                        { text: "as<b>sign</b>ment", s: 2.210, e: 2.660 },
+                        { text: "in <b>weeks</b>.", s: 2.660, e: 3.470 }
+                    ]
+                },
+                {
+                    audio: "audio/LST5.wav", start: 0.000, end: 5.150,
+                    ipa: "[<b>hɑ:!</b> <b>jæ</b>, ɪts '<b>prɑ:</b>bəbli ðə <b>best</b> <b>ʃɑ:t</b> ðæt aɪm ɡənə <b>ɡɛt</b> tə'<b>deɪ</b>. ɪt ɪz '<b>swɛl</b>tərɪŋ ɪn <b>hɪr</b>]",
+                    trans: "하! 맞아, 아마 이게 내가 오늘 건질 수 있는 가장 최고의 사진일 거야. 하, 여기 정말 푹푹 찌네.",
+                    chunks: [
+                        // 교재 규격 준수: 자막 파일 기반 타임라인 매칭 수정
+                        { text: "<b>Ha!</b>", s: 0.000, e: 0.680 },
+                        { text: "<b>Yeah</b>,", s: 0.680, e: 0.950 },
+                        { text: "it's <b>pro</b>bably the", s: 0.950, e: 1.360 },
+                        { text: "<b>best shot</b>", s: 1.360, e: 1.820 },
+                        { text: "that I'm gonna", s: 1.820, e: 2.140 },
+                        { text: "<b>get</b> today.", s: 2.140, e: 3.320 },
+                        { text: "It is", s: 3.590, e: 3.810 }, // 3.32~3.59 빈 구간 생략 보정
+                        { text: "<b>swel</b>tering", s: 3.810, e: 4.300 },
+                        { text: "in <b>here</b>.", s: 4.300, e: 5.150 }
+                    ]
+                },
+                {
+                    audio: "audio/LST6.wav", start: 0.000, end: 7.520,
+                    ipa: "[<b>bʌt</b> ju: <b>ʤʌst</b> <b>hæv</b> tə <b>tʃu:z</b> tə bi '<b>pɑ:</b>zətɪv br'kɔz <b>ɔ:l</b> ðoʊz <b>θɪŋz</b> ðæt <b>fi:l</b> laɪk '<b>kər</b>sɪz ɑr '<b>blɛ</b>sɪŋ. bɪ'kɔz ðɛi ʤʌst <b>meɪk</b> ju: '<b>strɑ:ŋ</b>ər.]",
+                    trans: "하지만 넌 그저 긍정적이 되기로 선택해야만 해. 왜냐하면 저주처럼 느껴지는 그 모든 것들이 축복이거든, 그것들이 널 단지 더 강하게 만들어주기 때문이야.",
+                    chunks: [
+                        { text: "<b>But</b>", s: 0.000, e: 0.460 },
+                        { text: "you just have to", s: 0.460, e: 0.900 },
+                        { text: "<b>choose</b> to be <b>po</b>sitive", s: 0.900, e: 2.030 },
+                        { text: "because all those", s: 2.030, e: 2.820 },
+                        { text: "things that", s: 2.820, e: 3.360 },
+                        { text: "feel like", s: 3.360, e: 3.780 },
+                        { text: "<b>cur</b>ses", s: 3.780, e: 4.390 },
+                        { text: "are a blessing", s: 4.390, e: 5.650 },
+                        { text: "because they just", s: 5.650, e: 6.160 },
+                        { text: "make you", s: 6.160, e: 6.560 },
+                        { text: "<b>stro</b>nger.", s: 6.560, e: 7.520 }
+                    ]
+                },
+                {
+    audio: "audio/LST7.wav", start: 0.000, end: 8.670,
+    ipa: "[bʌt <b>sæm</b> dɪd <b>fɪlm</b> sʌm ʌv ðə '<b>si:</b>nəri æn ɪt wʌz '<b>ri:.ə</b>.li '<b>prɪ</b>ti. ðə <b>fɑ:l</b> '<b>kʌ</b>lərz ɑr '<b>stɑr</b>tɪŋ tə <b>tʃeɪnʤ</b>. soʊ <b>jæ</b>, <b>naʊ</b> wər ɪn ðə <b>taʊn</b>. wər 'ɡənə <b>tʃek</b> ɪt aʊt]",
+    trans: "하지만 샘이 풍경을 좀 촬영했는데 정말 예뻤어. 단풍 색깔이 변하기 시작하더라고. 그러니까, 맞아! 지금 우린 마을에 있고 구경해 보려고 해.",
+    chunks: [
+        { text: "But", s: 0.000, e: 0.510 },                             // 1번 자막[cite: 25]
+        { text: "<b>Sam</b> did", s: 0.510, e: 0.980 },                         // 2번 자막[cite: 25]
+        { text: "<b>film</b>", s: 0.980, e: 1.460 },                            // 3번 자막[cite: 25]
+        { text: "some of the", s: 1.460, e: 2.350 },                        // 4번 자막[cite: 25]
+        { text: "<b>sce</b>nery", s: 2.350, e: 2.860 },                          // 5번 자막[cite: 25]
+        { text: "and it was", s: 2.860, e: 3.210 },                         // 6번 자막[cite: 25]
+        { text: "really pretty", s: 3.210, e: 3.880 },                      // 7번 자막[cite: 25]
+        { text: "The <b>fall col</b>ors are", s: 3.880, e: 4.690 },             // 8번 자막[cite: 25]
+        { text: "<b>star</b>ting to", s: 4.690, e: 5.120 },                     // 9번 자막[cite: 25]
+        { text: "<b>change</b>", s: 5.120, e: 6.230 },                          // 10번 자막[cite: 25]
+        { text: "So, yeah!", s: 6.230, e: 6.710 },                          // 11번 자막[cite: 25]
+        { text: "<b>now</b> we're in the <b>town</b> and", s: 6.710, e: 7.500 }, // 12번 자막[cite: 25]
+        { text: "we're gonna <b>check</b> it out.", s: 7.500, e: 8.670 }       // 13번 자막[cite: 25]
+    ]
+},
+                {
+                    audio: "audio/LST8.wav", start: 0.000, end: 6.090,
+                    ipa: "[ðæt ɪz sʌtʃ ə koʊ'<b>ɪn</b>sɪdəns. aɪ '<b>æk</b>tʃuəli <b>ʤʌst</b> ɡa:t prə'<b>moʊ</b>təd əz wɛl. aɪm '<b>meɪ</b>kɪŋ <b>mɔr</b> '<b>mʌ</b>ni, '<b>wər</b>kɪŋ <b>lɛs</b>, soʊ aɪ '<b>faɪ</b>nəli <b>hæv</b> <b>taɪm</b> tə <b>deɪt</b> ə'<b>ʤɛn</b>.]",
+                    trans: "정말 엄청난 우연이네! 나도 사실 방금 막 승진했거든. 돈은 더 많이 벌고 일은 덜 해서, 드디어 다시 연애할 시간이 생겼어.",
+                    chunks: [
+                        { text: "That is such a", s: 0.000, e: 0.650 },
+                        { text: "co<b>in</b>cidence", s: 0.650, e: 1.220 },
+                        { text: "I actually just got", s: 1.220, e: 1.750 },
+                        { text: "pro<b>mo</b>ted as well", s: 1.750, e: 2.710 },
+                        { text: "Im making", s: 2.710, e: 3.090 },
+                        { text: "more money,", s: 3.090, e: 3.940 },
+                        { text: "working less,", s: 3.940, e: 4.860 },
+                        { text: "so I finally have", s: 4.860, e: 5.390 },
+                        { text: "time to", s: 5.390, e: 5.660 },
+                        { text: "<b>date a</b>gain.", s: 5.660, e: 6.090 }
+                    ]
+                },
+                {
+                    audio: "audio/LST9.wav", start: 0.000, end: 6.770,
+                    ipa: "[ʌv <b>kɔrs</b> aɪv <b>watʃt</b> ðə <b>ʃoʊ</b>, ænd aɪ <b>θɪŋk</b> ɪt ɪz <b>soʊ</b> <b>mʌtʃ</b> <b>fʌn</b>, ænd aɪ <b>θɪŋk</b> ɪts <b>soʊ</b> '<b>hæ</b>pi ænd ɪn'fɛkʃəsli '<b>ʤɔɪ</b>əs]",
+                    trans: "당연히 나도 그 쇼를 봤지! 그리고 정말 너무 재밌다고 생각해. 내 생각엔 아주 행복하고 전염성 있게 즐거운 프로그램이야.",
+                    chunks: [
+                        { text: "Of course", s: 0.000, e: 0.640 },
+                        { text: "I've", s: 0.640, e: 0.750 },
+                        { text: "watched", s: 0.750, e: 1.120 },
+                        { text: "the show", s: 1.120, e: 1.480 },
+                        { text: "and I think it is", s: 1.480, e: 2.120 },
+                        { text: "so much", s: 2.120, e: 2.630 },
+                        { text: "fun I think it's", s: 2.630, e: 3.800 },
+                        { text: "so", s: 3.800, e: 4.200 },
+                        { text: "<b>ha</b>ppy", s: 4.200, e: 4.970 },
+                        { text: "and", s: 4.970, e: 5.340 },
+                        { text: "infectiously", s: 5.340, e: 6.100 },
+                        { text: "<b>joy</b>ous.", s: 6.100, e: 6.770 }
+                    ]
+                },
+                {
+                    audio: "audio/LST10.wav", start: 0.000, end: 6.870,
+                    ipa: "[<b>ʤʌst</b> br'ka:z '<b>ɛv</b>ri <b>fɑ:l</b>, aɪ '<b>laɪk</b> rɪ'væmpɪŋ maɪ '<b>kloʊ</b>ðɪŋ aɪ '<b>stɪl</b> '<b>ki:p</b> maɪ '<b>feɪ</b>vərəts, bʌt aɪ '<b>laɪk</b> 'ædɪŋ '<b>nju:</b> '<b>pi:</b>səz, ʌv '<b>kɔrs</b>]",
+                    trans: "왜냐하면 매년 가을마다 난 내 옷들을 새로 정비하는 걸 좋아하거든. 내가 가장 좋아하는 옷들은 여전히 남겨두지만, 물론 새로운 아이템들을 추가하는 걸 좋아해.",
+                    chunks: [
+                        { text: "Just", s: 0.000, e: 0.280 },
+                        { text: "because", s: 0.280, e: 0.650 },
+                        { text: "every", s: 0.650, e: 1.040 },
+                        { text: "fall,", s: 1.040, e: 1.410 },
+                        { text: "I like", s: 1.410, e: 1.790 },
+                        { text: "revamping", s: 1.790, e: 2.700 },
+                        { text: "my", s: 2.700, e: 3.070 },
+                        { text: "clothing", s: 3.070, e: 3.430 },
+                        { text: "I still", s: 3.430, e: 4.310 },
+                        { text: "keep my", s: 4.310, e: 4.780 },
+                        { text: "favorites,", s: 4.780, e: 5.190 },
+                        { text: "but I like", s: 5.190, e: 5.560 },
+                        { text: "adding", s: 5.560, e: 5.880 },
+                        { text: "<b>new pie</b>ces, of", s: 5.880, e: 6.540 },
+                        { text: "course.", s: 6.540, e: 6.870 }
+                    ]
+                }
+            ]
+        };
+
+        const player = document.getElementById('player'), 
+              displayArea = document.getElementById('display-area'),
+              prevBtn = document.getElementById('prev-btn'),
+              nextBtn = document.getElementById('next-btn'),
+              navIndicator = document.getElementById('nav-indicator'),
+              topNavMenu = document.getElementById('top-nav-menu');
+        
+        let stopTime = 0;
+        let currentAudioFile = "";
+        let currentCardIndex = 0; 
+        let currentGlobalSpeed = 1.0; 
+        let onAudioReadyCallback = null;
+
+        function initApp() {
+            let menuHtml = "";
+            let cardsHtml = "";
+
+            studyData.sentences.forEach((item, index) => {
+                menuHtml += `<button class="nav-tab ${index === 0 ? 'active-tab' : ''}" id="tab-${index}" onclick="jumpToCard(${index})">LST ${index + 1}</button>`;
+                
+                const chunksHtml = item.chunks.map(c => `<span class="chunk" data-s="${c.s}" data-e="${c.e}">${c.text}</span>`).join(' ');
+                
+                cardsHtml += `
+                <div class="card" id="card-${index}" data-audio="${item.audio}" data-start="${item.start}" data-end="${item.end}">
+                    <div class="card-header" onclick="event.stopPropagation();">
+                        <div class="card-title">LST ${index + 1}</div>
+                        <div class="speed-grp">
+                            <button class="speed-btn ${currentGlobalSpeed===0.3?'active':''}" onclick="setCardSpeed(0.3, this)">x0.3</button>
+                            <button class="speed-btn ${currentGlobalSpeed===0.5?'active':''}" onclick="setCardSpeed(0.5, this)">x0.5</button>
+                            <button class="speed-btn ${currentGlobalSpeed===0.7?'active':''}" onclick="setCardSpeed(0.7, this)">x0.7</button>
+                            <button class="speed-btn ${currentGlobalSpeed===1.0?'active':''}" onclick="setCardSpeed(1.0, this)">x1.0</button>
+                        </div>
+                    </div>
+                    <div class="card-main-row">
+                        <div class="play-btn"></div>
+                        <div class="text-content">
+                            <div class="sentence-eng">${chunksHtml}</div>
+                            <div class="ipa-text">${item.ipa}</div>
+                            <div class="trans-text">${item.trans}</div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            
+            topNavMenu.innerHTML = menuHtml;
+            displayArea.innerHTML = cardsHtml; 
+            updateNavigation();
+            setupAudioEngine();
+        }
+
+        function setupAudioEngine() {
+            player.addEventListener('loadedmetadata', () => {
+                if (onAudioReadyCallback) {
+                    onAudioReadyCallback();
+                    onAudioReadyCallback = null;
+                }
+            });
+        }
+
+        function jumpToCard(index) {
+            currentCardIndex = index;
+            updateNavigation();
+        }
+
+        function updateNavigation() {
+            stopAll();
+            
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, idx) => {
+                if(idx === currentCardIndex) card.classList.add('active-card');
+                else card.classList.remove('active-card');
+            });
+
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach((tab, idx) => {
+                if(idx === currentCardIndex) tab.classList.add('active-tab');
+                else tab.classList.remove('active-tab');
+            });
+
+            prevBtn.disabled = (currentCardIndex === 0);
+            nextBtn.disabled = (currentCardIndex === studyData.sentences.length - 1);
+            navIndicator.innerText = `${currentCardIndex + 1} / ${studyData.sentences.length}`;
+        }
+
+        function moveCard(direction) {
+            currentCardIndex += direction;
+            if(currentCardIndex < 0) currentCardIndex = 0;
+            if(currentCardIndex >= studyData.sentences.length) currentCardIndex = studyData.sentences.length - 1;
+            updateNavigation();
+        }
+
+        displayArea.addEventListener('click', (e) => {
+            const card = e.target.closest('.card'), chunk = e.target.closest('.chunk'), playBtn = e.target.closest('.play-btn');
+            
+            if (chunk) { 
+                stopAll(); 
+                chunk.classList.add('active'); 
+                
+                const targetCard = chunk.closest('.card');
+                if (targetCard) {
+                    targetCard.classList.add('playing', 'active-play');
+                    playPart(targetCard.dataset.audio, parseFloat(chunk.dataset.s), parseFloat(chunk.dataset.e));
+                }
+                return; 
+            }
+            
+            if (playBtn || card) {
+                const targetCard = card;
+                if (targetCard.classList.contains('playing')) { player.pause(); targetCard.classList.remove('playing'); } 
+                else { stopAll(); targetCard.classList.add('playing', 'active-play'); playPart(targetCard.dataset.audio, parseFloat(targetCard.dataset.start), parseFloat(targetCard.dataset.end)); }
+            }
+        });
+
+        function playPart(audioSrc, s, e) { 
+            const executePlay = () => {
+                player.playbackRate = currentGlobalSpeed;
+                const rate = player.playbackRate;
+                
+                stopTime = e - (0.02 * rate); 
+                player.currentTime = Math.max(0, s - (s > 0 ? 0.15 * rate : 0)); 
+                
+                player.play().catch(err => console.log("Play rejected:", err));
+            };
+
+            if (currentAudioFile !== audioSrc) {
+                player.pause();
+                currentAudioFile = audioSrc;
+                player.src = audioSrc;
+                onAudioReadyCallback = executePlay; 
+                player.load(); 
+            } else {
+                if (player.readyState >= 1) {
+                    executePlay();
+                } else {
+                    onAudioReadyCallback = executePlay;
+                }
+            }
+        }
+
+        function stopAll() { 
+            player.pause(); stopTime = 0; 
+            onAudioReadyCallback = null; 
+            document.querySelectorAll('.playing, .active-play, .chunk.active').forEach(el => {
+                el.classList.remove('playing', 'active-play', 'active');
+            });
+        }
+
+        player.addEventListener('timeupdate', () => {
+            if (stopTime > 0 && player.currentTime >= stopTime) {
+                audioFinished();
+            }
+        });
+
+        player.addEventListener('ended', () => {
+            audioFinished();
+        });
+
+        function audioFinished() {
+            player.pause(); stopTime = 0; 
+            const active = document.querySelector('.card.playing');
+            if (active) { 
+                const hasActiveChunk = active.querySelector('.chunk.active');
+                if (hasActiveChunk) hasActiveChunk.classList.remove('active');
+                active.classList.remove('playing'); 
+            }
+        }
+
+        function setCardSpeed(speed, btn) { 
+            currentGlobalSpeed = speed; 
+            player.playbackRate = speed; 
+            
+            document.querySelectorAll('.speed-grp .speed-btn').forEach(b => {
+                if(parseFloat(b.innerText.replace('x', '')) === speed) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+        }
+
+        window.onload = () => {
+            initApp();
+        };
+    </script>
+</body>
+</html>
