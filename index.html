@@ -400,7 +400,7 @@
                 const rate = player.playbackRate;
                 
                 stopTime = e - (0.02 * rate); 
-                player.currentTime = Math.max(0, s - (s > 0 ? 0.15 * rate : 0)); 
+                player.currentTime = Math.max(0, s - (s > 0 ? 0.12 * rate : 0)); 
                 
                 player.play().catch(err => console.log("Play rejected:", err));
             };
