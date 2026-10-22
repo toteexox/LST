@@ -49,7 +49,7 @@
         .text-content { flex: 1; display: flex; flex-direction: column; }
         
         .sentence-eng { font-size: 22px; font-weight: 600; line-height: 1.4; margin-bottom: 8px; display: block; white-space: normal; }
-        .ipa-text { color: #666; font-size: 16px; margin-bottom: 6px; font-family: 'Inter',sans-serif !important; sans-serif; letter-spacing: 0.5px;}
+        .ipa-text { color: #666; font-size: 16px; margin-bottom: 6px; font-family: 'Inter', sans-serif !important; letter-spacing: 0.5px; }
         .trans-text { color: #777; font-size: 16px; font-weight: 500; }
 
         .chunk { pointer-events: auto; cursor: pointer; border-radius: 4px; padding: 1px 2px; display: inline; margin: 0; }
@@ -240,6 +240,7 @@
                     <div class="card-header" onclick="event.stopPropagation();">
                         <div class="card-title">LST ${index + 1}</div>
                         <div class="speed-grp">
+                            <button class="speed-btn ${currentGlobalSpeed===0.1?'active':''}" onclick="setCardSpeed(0.1, this)">x0.1</button>
                             <button class="speed-btn ${currentGlobalSpeed===0.3?'active':''}" onclick="setCardSpeed(0.3, this)">x0.3</button>
                             <button class="speed-btn ${currentGlobalSpeed===0.5?'active':''}" onclick="setCardSpeed(0.5, this)">x0.5</button>
                             <button class="speed-btn ${currentGlobalSpeed===0.7?'active':''}" onclick="setCardSpeed(0.7, this)">x0.7</button>
@@ -326,13 +327,16 @@
             }
         });
 
-        function playPart(audioSrc, s, e) { 
+        function playPart(audioSrc, s, e) {  
             const executePlay = () => {
                 player.playbackRate = currentGlobalSpeed;
                 const rate = player.playbackRate;
                 
-                stopTime = e - (0.02 * rate); 
-                player.currentTime = Math.max(0, s - (s > 0 ? 0.12 * rate : 0)); 
+                // 0.1배속 같이 아주 느린 속도일 때 시간 오차를 보정합니다.
+                const timeOffset = (rate <= 0.1) ? 0.01 : (s > 0 ? 0.12 * rate : 0);
+                
+                stopTime = e - (0.02 * rate);  
+                player.currentTime = Math.max(0, s - timeOffset);  
                 
                 player.play().catch(err => console.log("Play rejected:", err));
             };
@@ -341,8 +345,8 @@
                 player.pause();
                 currentAudioFile = audioSrc;
                 player.src = audioSrc;
-                onAudioReadyCallback = executePlay; 
-                player.load(); 
+                onAudioReadyCallback = executePlay;  
+                player.load();  
             } else {
                 if (player.readyState >= 1) {
                     executePlay();
